@@ -1,10 +1,8 @@
 # Object files
 *.ecl
-*.dep
 
 # Precompiled Headers
-*.gch
-*.pch
+*.dep
 
 # Libraries
 *.lib
