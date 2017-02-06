@@ -1,0 +1,6 @@
+use os;
+use uo;
+
+start_script( "server_diag");
+
+

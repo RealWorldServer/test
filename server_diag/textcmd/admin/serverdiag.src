@@ -1,0 +1,46 @@
+use os;
+use uo;
+
+include "global/unicode";
+include "util/dateutils";
+
+var globname := "server_diag";
+
+program serverdiag(who, text)
+	
+	var data := GetGlobalProperty(globname);
+
+	if(!data)
+		SendSysMessage(who, "'" +globname+ "' - " +data.errortext);
+		return;
+	else
+		case(text)
+		"clean":
+			EraseGlobalProperty(globname);
+			SendSysMessage(who, "Удалено: " +cstr(data.size())+ " запись(ей).");
+
+		"?":
+			SendSysMessage(who, ".serverdiag 'name' - подробнее..");
+			SendSysMessage(who, ".serverdiag clean - удалить все записи");
+
+		default:
+			if( text in (data.keys()) )
+				var tmp:=text+":";
+				for i:=1 to len(data[text]) 
+					tmp := tmp + " " + data[text, i];
+				endfor
+				SendSysMessage(who, tmp);
+			else
+				SendSysMessage(who, "Записей (" +cstr(data.size()) +"):", 0x3, 74);
+
+				foreach key in (data.keys())
+					SendSysMessage(who, key);
+					sleepms(50);
+				endforeach
+			endif
+		endcase
+	endif
+
+endprogram
+
+

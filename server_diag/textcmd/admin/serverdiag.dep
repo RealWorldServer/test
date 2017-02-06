@@ -1,0 +1,5 @@
+C:\Users\Sergei\Documents\RealWorld Server\pkg\systems\server_diag\textcmd\admin\serverdiag.src
+include/global/unicode.inc
+include/util/dateutils.inc
+include/util/dateconsts.inc
+include/util/stringutils.inc

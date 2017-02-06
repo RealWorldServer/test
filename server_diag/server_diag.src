@@ -1,0 +1,49 @@
+use os;
+use uo;
+use util;
+
+include "util/dateutils";
+/*
+	1 час 	= 3600 сек.
+	3 часа 	= 10800 сек. ***
+	24 часа = 86400 сек.
+*/
+var interval := 10800;
+
+var globname := "server_diag";
+
+program neebicheskaya_diagnostika()
+
+	while(1)
+
+		Sleep(interval);
+	
+		var db := dictionary;
+
+		if(GetGlobalProperty(globname))
+			db := GetGlobalProperty(globname);
+		endif
+
+		var today := CDateTimeStr2(polcore().systime+3600*3); // Example: 19-Dec 9:55
+
+		var data:= {
+			Polcore().itemcount, 
+			Polcore().mobilecount, 
+			Polcore().events_per_min,
+			Polcore().combat_operations_per_min,
+			Polcore().error_creations_per_min,
+			len(Polcore().all_scripts)
+		};
+
+		if(db.exists(today))
+			SysLog(today + " - already exists!");
+		else
+			db.insert(today, data);
+			SetGlobalProperty(globname, db);
+		endif
+
+	endwhile;
+
+endprogram
+
+
