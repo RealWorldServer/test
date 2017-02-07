@@ -1,0 +1,248 @@
+use uo;
+use os;
+include "global/unicode";
+include "internal/gmlog";
+
+set_script_option(SCRIPTOPT_NO_RUNAWAY,1);
+
+const LOGFILE_PATH 	:= "::log/players/result-giverenamedeed.log";
+var count := 0;
+
+program accbynick(who, text)
+
+	
+	if(text != "all")
+		SendSysMessage(who,"Синтаксис: .giverenamedeed all");
+		SendSysMessage(who,"Список имен за 26.03.2016");
+		return;
+	endif
+
+	SendSysMessage(who,"Работа начата");
+
+	// Создаем таймер
+	var clock_item := CreateItemAtLocation( who.x, who.y, who.z, 0x887A, 1 );
+	SetObjProperty(clock_item, "Timer", ReadGameClock()+10);
+
+	// Список имен
+	text := {
+		"Cool Girl",
+		"Katia", 
+		"Advocate",
+		"RaSTaMaN",
+		"Camelot", 
+		"Femida", 
+		"ZiGaLo",
+		"LaDWiK", 
+		"Flamber", 
+		"Snoopik", 
+		"Lilight Orange", 
+		"Kol", 
+		"FuJi", 
+		"juk", 
+		"ThaMall", 
+		"BiZo", 
+		"Eminem", 
+		"Chaos Jet", 
+		"First Bard O-Z",
+		"ParaDise Club", 
+		"Lapochka", 
+		"tHe pOwEr", 
+		"AngeJI", 
+		"MoNaX", 
+		"alla", 
+		"ShMoN", 
+		"MakrosHunter", 
+		"Mage'Assassin", 
+		"Septer'O'Core",
+		"Ziban", 
+		"First SereGa", 
+		"Music",
+		"LaT", 
+		"Bizzare Contact", 
+		"PuSSaLei",
+		"Old Drapok", 
+		"Lady Lina Inverse", 
+		"First nOname O-Z", 
+		"MacroSsMan", 
+		"Mira", 
+		"Miguel Viera", 
+		"Sponge Bob",
+		"ArTiStKa", 
+		"Lord old DRON", 
+		"DeadMag", 
+		"sHut'waRRior", 
+		"Tinky", 
+		"Soldier", 
+		"Mustafa",
+		"Yeah People", 
+		"krelyn", 
+		"C II A P T A K", 
+		"sHut'Mage", 
+		"Lord Solo", 
+		"SerGiuS", 
+		"SoulDead oFF LilDead", 
+		"The Angel's dream",
+		"I love is Sky", 
+		"Lord BaD AngeL", 
+		"Exclusive", 
+		"SHATLIK", 
+		"Roy Jones'Jr", 
+		"PritarianeC", 
+		"Zab Super Juddah", 
+		"AquaSky", 
+		"Marcel Woods", 
+		"AvToRiTeT", 
+		"Kylagin", 
+		"MATPEHA", 
+		"almeca", 
+		"Nastya", 
+		"Child of the Sun", 
+		"AngeJIoK", 
+		"Smersh", 
+		"of the sky", 
+		"The Champion", 
+		"Sinner", 
+		"xDD'", 
+		"Diablo", 
+		"Pusi Kat Dols", 
+		"Tamerlan", 
+		"KAZAKOOF", 
+		"TVAYUMATb",
+		"Temppp", 
+		"Game Over Man", 
+		"Game Over", 
+		"KoKa Locka", 
+		"DENchiK", 
+		"Tempp", 
+		"El Saludo los Adaptadores", 
+		"RWR Rulezzz", 
+		"I see DeaD PeopLE", 
+		"A Xo XO HE Xo XO", 
+		"StoppeR", 
+		"WooHoo", 
+		"Dimches", 
+		"GopotA", 
+		"HeBuDumkA",
+		"GopotenoK",
+		"Pro Player",
+		"oFF", 
+		"Krouli", 
+		"Temches", 
+		"Lady Infinity", 
+		"Risedent Evil", 
+		"Dearg Due", 
+		"Kabalion", 
+		"Horu BuHunyxa", 
+		"SupporT", 
+		"Anonymous", 
+		"SimWarrior", 
+		"Jedem das Seine", 
+		"Puff Daddy", 
+		"pwnz'Oz",
+		"SoulCryer", 
+		"DimOk", 
+		"Liverpool", 
+		"MS.LORD",
+		"Soul of Dead", 
+		"CaniS LatranS", 
+		"Tamer - Provok",
+		"Naruto",
+		"Axe Master", 
+		"lylyep", 
+		"BPArCuCTeMbl", 
+		"Animal Controller", 
+		"3aHyDA", 
+		"Winampik", 
+		"FlashPoint", 
+		"vjarenii veselii", 
+		"Holy Avanger", 
+		"Sacred Destroyer", 
+		"KoJIobok", 
+		"Xenkok", 
+		"Ero Sanin", 
+		"TiesTo", 
+		"Hu XyA CeBe XyA",
+		"Gas Monkey", 
+		"Dilan", 
+		"Gud Explosion", 
+		"TempBoot", 
+		"Bugor", 
+		"Hu XyA CeBe XyA",
+		"Smert-Himik", 
+		"lyly tawiee", 
+		"Kill Me Plz", 
+		"Moridin", 
+		"Subrey",
+		"The Mag",
+		"Andr one Love", 
+		"Billy Milligan", 
+		"Elena", 
+		"Kadizer", 
+		"Vinky",
+		"ZooL De La Soul", 
+		"Sentimentale",
+		"Rgard", 
+		"Ruslan Love Odessa", 
+		"Obito Uchiha", 
+		"Pafos Boy", 
+		"Borziy", 
+		"persik"
+	};
+
+	var array_result := {};
+
+	var nick;
+	var acct, chr, item;
+
+	for j:=1 to len(text)
+
+		nick := lower(text[j]);
+
+		foreach acctname in listAccounts()
+	
+			acct := findAccount(acctname);
+	
+			for i:=1 to 5
+				if(acct.getcharacter(i))
+					chr := acct.getcharacter(i);
+				endif
+			endfor
+			Sleepms(1);
+	
+			if(lower(chr.name) == nick)
+	
+				if(chr)
+	
+					item := CreateItemInBackpack(chr, "renamedeed", 1);
+					SetObjProperty(item, "Created", who.name);
+					array_result := cstr(array_result) + chr.name + ", ";
+					count := count + 1;	
+
+					if(GetObjProperty(clock_item,"Timer") <= ReadGameClock())
+						SetObjProperty(clock_item, "Timer", ReadGameClock()+5);
+						SendSysMessage(who, j +" из " + len(text));
+					endif
+
+
+
+					//logtofile(LOGFILE_PATH, who.name+"/"+who.acctname+" => Получил "+item.desc+" ("+item.serial+")");
+	
+				endif
+	
+			endif
+	
+		endforeach
+		Sleepms(1);
+
+	endfor
+
+	logtofile(LOGFILE_PATH, cstr(array_result));
+	SendSysMessage(who,"Работа завершена (Всего: " + count + ")");
+
+	// Убираем таймер
+	EraseObjProperty(clock_item,"Timer");
+	DestroyItem(clock_item);
+
+endprogram
+		
+		

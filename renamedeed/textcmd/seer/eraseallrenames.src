@@ -1,0 +1,123 @@
+// AKaki 26.03.2016
+use uo;
+use os;
+
+include "util/utility";
+include "npc/template";
+include "util/bank";
+
+set_script_option(3,1);
+
+var backpack;
+
+program search_renamedeed(who, text)
+
+    var item := 0x72f4; // renamedeed2
+
+    backpack := CreateItemInBackpack(who, "bag", 1);
+    backpack.color := 85;
+    backpack.name := "New RenameDeed's";
+
+    var xm := who.x;
+    var ym := who.y;
+
+    SendSysMessage(who,"Работа начата");
+
+    var x, y, z;
+    for(x:=6144; x>16; x:=x -32)
+    for(y:=16; y<4096; y:=y+32)
+    for(z:=-60; z<=60; z:=z+2)
+
+    //-Начинаем поиск в БП вендоров-//
+    //SendSysMessage(who, "Начинаем поиск в БП вендоров");
+        
+    foreach me in  ListMobilesNearLocation( x, y, z, 32)
+
+        if(me.script == "playerMerchant")
+
+        var packtype := 0xe75;
+        if(npc_short(me.npctemplate) == "playervendor2") packtype := 0x966d; endif
+
+        var storage := find_or_create_storage("PlayerVendorStorage");
+        var newp := find_or_create_item(storage, me.serial + " 1C", packtype);
+
+        foreach itm in EnumerateItemsInContainer( newp ) 
+            SendSysMessage(who, newp);
+            if(itm.objtype == item) renamedeed_check(Who, itm, text); endif    // hmm
+
+        endforeach
+
+        endif
+
+    endforeach
+
+    //-Начинаем поиск итемов в мире и контейнирах-//
+    //SendSysMessage(who, "Начинаем поиск итемов в мире и контейнирах");
+
+    foreach s in ListItemsNearLocation(x, y, z, 32)
+
+        if(s.objtype == item) renamedeed_check(Who, s, text); endif  
+
+        if(s.isa(POLCLASS_CONTAINER))
+
+            foreach a in EnumerateItemsInContainer( s )
+
+                if(a.objtype == item) renamedeed_check(Who, a, text); endif   
+
+            endforeach
+
+        endif
+
+    endforeach
+
+    Sleepms(1);;
+    endfor
+    Sleepms(1);
+    endfor
+    Sleepms(1);
+    endfor  
+
+    //-Начинаем поиск итемов на всех аккаунтах и в банках-//
+    //SendSysMessage(who, "Начинаем поиск итемов на всех аккаунтах и в банках");
+
+    foreach acctname in ListAccounts( )
+         var acc := FindAccount( acctname );
+            for i := 1 to 2
+                var char:= acc.getcharacter(i);
+
+                    foreach mi in EnumerateItemsInContainer( char.backpack )  
+
+                        if(mi.objtype == item) renamedeed_check(Who, mi, text); endif  
+
+                    endforeach
+        
+                    var bank := FindBankBox( char ); 
+         
+                    foreach mit in EnumerateItemsInContainer( bank )
+    
+                        if(mit.objtype == item) renamedeed_check(Who, mit, text); endif  
+
+                    endforeach
+
+                    Sleepms(1);
+            endfor
+
+     endforeach
+
+    SendSysMessage(who,"Работа завершена");
+
+endprogram
+
+
+function renamedeed_check(Who, deed, text)
+
+    SendSysMessage(who, deed.desc + " (" + deed.serial + ") at " + deed.x + " " + deed.y);
+    moveitemtocontainer(deed, backpack);
+        
+endfunction
+
+
+
+
+        
+        

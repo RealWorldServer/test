@@ -1,0 +1,362 @@
+use uo;
+use os;
+use file;
+
+include "util/yesno";
+include "global/unicode";
+include "internal/gmlog";
+include "prefix"; 	// для kill
+include "util/res"; // для resurection
+include "distro/datafile_ex"; // by akaki
+
+const LOGFILE_PATH 	:= "::log/players/used-renamedeed.log";
+const LOGFILE_PATH2 := "::log/players/alert-renamedeed.log";
+var LOGDATE 		:= CDateTimeStr(polcore().systime+3600*3);
+
+const MAXCHAR		:= 20;	// MAX кол-во символов
+const MINCHAR		:= 3;	// MIN кол-во символов
+const CAPSPERCENT 	:= 50;	// процентов букв верхнего регистра.
+
+// Системные сообщения
+const WRONG_NAME 			:= "Запрещены ники, имеющие в своем составе слова '";
+const STAFF_PREFIX 			:= "' или ников принадлежащих команде сервера.";
+const MAX_WORDS 			:= "Запрещены ники, состоящие больше чем из трех слов.";
+const NAME_LENGHT 			:= "Ник должен состоять из 3-20 символов.";
+const INVALID_CHARACTERS 	:= "Недопустимые символы в имени.";
+const NAME_USED				:= "Это имя уже используется другим игроком. Выберите другое имя.";
+const CAPSLOCK_OFF			:= "Запрещены ники, состоящие на 50% и более процентов из букв верхнего регистра.";
+const CORRECT_NAME			:= "Имя сотвествует всем критериям";
+const YOU_NEW_NAME			:= "Ваше новое имя ";
+const SEXCHANGE				:= "Если Вы решили сменить пол, учтите - это болезненая процедура.";
+const CANCEL 				:= "Отменено!";
+
+const COLOR 	:= 34; 	// цвет сообжений: красный
+
+// Позиция гампа относительно X, Y
+var posX := 200;
+var posY := 40;		
+var deedser;
+
+program rename_deed(who,deed)
+	
+	deedser := deed.serial;
+
+	if(!deed.movable) 
+		SendSysMessage(who, "Эта вещь неподвижна"); 
+		return;
+	endif
+
+	if(!Accessible(who,deed)) 
+		return; 
+	endif 
+
+	// PAGE 0 - Default
+	var gflayout := {
+    	"page 0",
+        "NoDispose",
+        "NoClose",
+        "gumppic "+ posX +" "+ posY +" 2080", 					// top
+        "button "+ (posX+256) +" "+ (posY+2) +" 5052 5053 1", 	// EXIT
+        "gumppic "+ (posX+18) +" "+ (posY+37) +" 2081", 		// bg
+        "gumppic "+ (posX+18) +" "+ (posY+107) +" 2081", 		// bg
+        "gumppic "+ (posX+18) +" "+ (posY+177) +" 2081",		// bg
+        "gumppic "+ (posX+18) +" "+ (posY+247) +" 2081", 		// background
+        "gumppic "+ posX +" "+ (posY+317) +" 2083", 			// bottom 
+        "gumppic "+ (posX+75) +" "+ (posY+11) +" 1801"			// title
+	};
+
+	var gfdata := {""};
+
+	// PAGE 1 - Условия
+	gflayout.append("page 1");
+	gflayout.append("htmlgump "+ (posX+22) +" "+ (posY+34) +" 256 284 "+ len(gfdata) +" 1 1");
+	gflayout.append("button "+ (posX+127) +" "+ (posY+327) +" 2074 2076 0 2 0");
+
+    gfdata.append
+    (
+       	"I. Имя может состоять из 3-20 символов.<br>
+		II. Запрещены бессмысленные ники (вроде wergwrgf).<br>
+		III. Запрещены ники, содержащие цифры, символы. Исключение символ - и '<br>
+		IV. Запрещено использовать в нике нецензурщину, расизм, названия наркотических средств.<br>
+		V. Запрещены ники, имеющие в своем составе слова Counselor, Seer, GM или ников принадлежащих команде сервера.<br>
+		VI. Запрещена регистрация имён, схожих с уже существующими до степени, которые могут ввести в заблуждениедругих пользователей в игре."
+	);
+
+	// PAGE 2 - Изменение имени
+	gflayout.append("page 2");
+
+	var sex;
+	case(who.gender)
+		0: sex := 121;
+		1: sex := 120; 
+	endcase
+
+	gflayout.append("gumppic "+ (posX+60) +" "+ (posY+55) +" "+ sex); 						// human gump
+	gflayout.append("text "+ (posX+65) +" "+ (posY+40) +" 49 " + len(gfdata));
+	gfdata.append("Введите желаемое имя");
+    gflayout.append("resizepic "+ (posX+50) +" "+ (posY+64) +" 9500 200 25"); 				// input bg
+    gflayout.append("textentry "+ (posX+55) +" "+ (posY+68) +" 187 25 71 0 "+ len(gfdata));	// input text
+    gfdata.append(who.name); 																// input placeholder
+    gflayout.append("checkbox  "+ (posX+85) +" "+ (posY+285) +" 212 211 0 100"); 			// radio button
+    gflayout.append("text "+ (posX+110) +" "+ (posY+285) +" 49 "+ len(gfdata));
+    gfdata.append("Сменить пол"); 
+    gflayout.append("button "+ (posX+127) +" "+ (posY+327) +" 2074 2076 1 0 10");			// OK
+
+    // ВЫВОД
+	var choice := SendDialogGump( who, gflayout, gfdata );
+	var his_choice := 0;
+
+	foreach key in ( choice.keys )
+	    his_choice := his_choice + key;
+	    //SendSysMessage(who, "key: " + key);
+	endforeach
+
+	var text := choice[0][4, len(choice[0])]; // имя из текстового поля
+	var res;
+
+	case (his_choice)
+
+		10:	 res := changename(who, text, 0); // смена имени
+    	110: res := changename(who, text, 1); // смена имени и пола
+
+    	default: 
+    		SendSysMessage(who, CANCEL, 3, 0);
+    endcase
+
+    if(res) 
+    	EraseObjProperty(deed,"Used");
+    	DestroyItem(deed); 
+    else
+    	SetObjProperty(deed,"Used",who.serial);
+    endif;
+
+endprogram
+
+// СМЕНА ИМЕНИ
+function changename(who, text, sex)
+
+	var reserved := 
+	{ 
+		"akaki", "okake", "grem", "devproject", "admin", "counselor", "seer", 
+		"lady", "lord", "staff", "realworld", "ostard", "horse", "npc",
+		"'gm", "gm'","-gm", "gm-"
+	};
+
+	if(!text)
+		SendSysMessage(who, NAME_LENGHT, 3, COLOR);
+		SendSysMessage(who, CANCEL, 3, 0);
+		return;
+	endif
+
+	var temp := SplitWords(text); 	// Возвращает маcсив имени
+	var lt := len(temp);  			// Размер массива 1 - 3
+	var maxlen := MAXCHAR;			// MAX кол-во символов в имени (Сейчас: 20)
+
+	if(who.dead)
+		SendSysMessage(who, CANCEL, 3, 0);
+		logtofile(LOGFILE_PATH2, LOGDATE + ": PLAYER_IS_DEAD: "+who.name+"/"+who.acctname+" => "+text);
+		return;
+	endif
+
+	// Если имя состоит больше чем из трех слов
+	if(lt > 3)
+		SendSysMessage(who, MAX_WORDS, 3, COLOR);
+		SendSysMessage(who, CANCEL, 3, 0);
+		return;
+	endif
+
+	// Если 50% и более процентов из букв верхнего регистра.
+	if( !Character_Uppercase(text) )
+		SendSysMessage(who, CAPSLOCK_OFF, 3, COLOR);
+		SendSysMessage(who, CANCEL, 3, 0);
+		return;
+	endif
+
+	// START FOR
+	for i:=1 to lt
+
+		// Кол-во символов в имени. Сейчас от 3 до 20.
+		if( len(temp[i]) > maxlen OR  len(temp[i]) < MINCHAR )
+			SendSysMessage(who, NAME_LENGHT, 3, COLOR);
+			SendSysMessage(who, CANCEL, 3, 0);
+			return;
+		endif
+		
+		if(i < lt) maxlen := maxlen - len(temp[i]); endif
+
+		//Если недопустимые символы в имени. Разрешено: Aa-Zz'-
+		if( !Character_Validation(temp[i]) )
+			SendSysMessage(who, INVALID_CHARACTERS, 3, COLOR);
+			logtofile(LOGFILE_PATH2, LOGDATE + ": INVALID_CHARACTERS: "+who.name+"/"+who.acctname+" => "+temp[i]);
+			SendSysMessage(who, CANCEL, 3, 0);
+			return;
+		endif
+
+		// Проверка на Counselor, Seer, GM и остальное
+		if( lower(temp[i]) in reserved )
+			SendSysMessage(who, WRONG_NAME + temp[i] + STAFF_PREFIX, 3, COLOR);
+			logtofile(LOGFILE_PATH2, LOGDATE + ": WRONG_NAME: "+who.name+"/"+who.acctname+" => "+temp[i]);
+			SendSysMessage(who, CANCEL, 3, 0);
+			return;
+		endif
+
+	endfor
+	// END FOR
+
+	// Для особо хитрожопых
+	for j:=1 to len(reserved)
+
+		if(find(lower(temp), reserved[j], 0))
+			SendSysMessage(who, WRONG_NAME + reserved[j] + "'", 3, COLOR);
+			logtofile(LOGFILE_PATH2, LOGDATE + ": WRONG_NAME: "+who.name+"/"+who.acctname+" => "+temp);
+			SendSysMessage(who, CANCEL, 3, 0);
+			return;
+		endif
+
+	endfor
+
+	case(lt)
+		1: temp := temp[1];
+		2: temp := temp[1] + " " + temp[2];
+		3: temp := temp[1] + " " + temp[2] + " " + temp[3];
+	endcase
+
+	var nn := cstr(temp); // новое имя
+
+	// Проверка на сопадающие имена в базе
+	if(nn && namecheck(nn) AND nn != who.name)
+
+		SendSysMessage(who, CORRECT_NAME, 3, 70);
+		SendSysMessage(who, SEXCHANGE, 3, 0);
+
+		if(yesno(who,"Вы уверены?"))
+			SendSysMessage(who, YOU_NEW_NAME + nn, 3, 70);
+			PlayStationaryEffect(who.x, who.y, who.z, 0x377a, 0x1, 0x30, 0 );
+
+			logtofile(LOGFILE_PATH, LOGDATE + ": "+who.name+"/"+who.acctname+" => "+nn + " (ser "+deedser+")"); //log
+			SaveToData(":rename:request", who.name, LOGDATE, "RENAME REQUEST: " +who.name+ " -> " +nn+ " [checkcode " +deedser+ "]");
+
+			Setname(who, nn); if (sex) changesex(who); endif
+			return 1;
+		else
+			SendSysMessage(who, CANCEL, 3, 0);
+			return;
+		endif
+	else
+		sendSysMessage(who, NAME_USED, 3, COLOR);
+		SendSysMessage(who, CANCEL, 3, 0);
+
+	endif 
+
+endfunction
+
+// Проверка на существующие имена
+function namecheck(nn)
+
+		var nickdb := getGlobalProperty("nickname_db");
+		if(nickdb)
+
+			var nick := lower(nn);
+			while(find(nick, " ", 1) == 1) nick := nick[2,len(nick)-1]; endwhile
+			while(find(nick, " ", len(nick)) == len(nick)) nick := nick[1,len(nick)-1]; endwhile
+
+			if(nickdb[nick] == 1)
+				return 0;
+			else
+				return 1;
+			endif
+
+		endif
+
+endfunction
+
+// Проверка на символы
+function Character_Validation(nn)
+
+	var q, validstr:= {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "'", "-"}; 
+
+	nn := lower(nn);
+	var used := 0; 	// кол-во повторяюющихся - или ';
+	var chk := 1;
+	// Если перед слово символ или в конце слова символ
+	if(nn[1] == "-" OR nn[len(nn)] == "-" 
+	OR nn[1] == "'" OR nn[len(nn)] == "'") chk := 0;
+	else
+		for(q:=1; q<=len(nn);q:=q+1)
+
+			if(nn[q] == "-" OR nn[q] == "'") used := used + 1; endif // Если - или ' более одного
+
+			if(!(nn[q] in validstr) OR used > 1)
+				chk := 0; 
+			endif
+
+		endfor
+	endif
+	return chk;
+
+endfunction
+
+// Проверка на CAPSLOCK
+function Character_Uppercase(nn)
+
+	var q, validstr:= {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}; 
+
+	var used := 0; 	// кол-во ТаКиХ вОт бУкВ
+
+	var chk := 1; //default
+
+	for(q:=1; q<=len(nn);q:=q+1)
+
+		if( (nn[q] in validstr) )
+			used := used + 1;
+		endif
+
+	endfor
+
+	if( used > (CAPSPERCENT*len(nn)/100) ) chk := 0; endif;
+
+	return chk;
+
+endfunction
+
+// СМЕНА ПОЛА
+function changesex(who)
+
+	var sex;
+	if(who.gender == 0) sex := 1; else sex := 0; endif 
+
+	who.gender := CInt(sex);
+
+	PlayStationaryEffect( who.x, who.y, who.z, 0x122a, 0x1, 0x80, 0); //blood
+	sleepms(400);
+
+	// Убиваем
+	if(!who.dead)
+		RevokePrivilege(who, "invul" );
+		Damage(who, GetHp(who)+100);
+	endif
+
+	//sleepms(400);
+
+	if(who.dead)
+
+		// Воскрещаем
+		ResurrectEx(who,RESURRECT_FORCELOCATION);
+
+		// Подбирает обратно вещи
+		foreach item in ListItemsNearLocation(who.x, who.y, who.z, 0)
+			if(GetObjProperty(item,"serial") == who.serial)
+				foreach thing in EnumerateItemsInContainer(item)
+					if(thing.container == item)
+						MoveItemToContainer(thing, who.backpack);
+					endif
+				endforeach
+			endif
+			break;
+		endforeach
+
+	endif
+	logtofile(LOGFILE_PATH2, LOGDATE + ": CHANGE_SEX: "+who.name+"/"+who.acctname);
+	SendSysMessage(who, "Смешна пола произошла успешно");
+
+endfunction
