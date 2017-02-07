@@ -5,34 +5,34 @@ use file;
 include "util/yesno";
 include "global/unicode";
 include "internal/gmlog";
-include "prefix"; 	// для kill
-include "util/res"; // для resurection
+include "prefix"; 	// РґР»СЏ kill
+include "util/res"; // РґР»СЏ resurection
 include "distro/datafile_ex"; // by akaki
 
 const LOGFILE_PATH 	:= "::log/players/used-renamedeed.log";
 const LOGFILE_PATH2 := "::log/players/alert-renamedeed.log";
 var LOGDATE 		:= CDateTimeStr(polcore().systime+3600*3);
 
-const MAXCHAR		:= 20;	// MAX кол-во символов
-const MINCHAR		:= 3;	// MIN кол-во символов
-const CAPSPERCENT 	:= 50;	// процентов букв верхнего регистра.
+const MAXCHAR		:= 20;	// MAX РєРѕР»-РІРѕ СЃРёРјРІРѕР»РѕРІ
+const MINCHAR		:= 3;	// MIN РєРѕР»-РІРѕ СЃРёРјРІРѕР»РѕРІ
+const CAPSPERCENT 	:= 50;	// РїСЂРѕС†РµРЅС‚РѕРІ Р±СѓРєРІ РІРµСЂС…РЅРµРіРѕ СЂРµРіРёСЃС‚СЂР°.
 
-// Системные сообщения
-const WRONG_NAME 			:= "Запрещены ники, имеющие в своем составе слова '";
-const STAFF_PREFIX 			:= "' или ников принадлежащих команде сервера.";
-const MAX_WORDS 			:= "Запрещены ники, состоящие больше чем из трех слов.";
-const NAME_LENGHT 			:= "Ник должен состоять из 3-20 символов.";
-const INVALID_CHARACTERS 	:= "Недопустимые символы в имени.";
-const NAME_USED				:= "Это имя уже используется другим игроком. Выберите другое имя.";
-const CAPSLOCK_OFF			:= "Запрещены ники, состоящие на 50% и более процентов из букв верхнего регистра.";
-const CORRECT_NAME			:= "Имя сотвествует всем критериям";
-const YOU_NEW_NAME			:= "Ваше новое имя ";
-const SEXCHANGE				:= "Если Вы решили сменить пол, учтите - это болезненая процедура.";
-const CANCEL 				:= "Отменено!";
+// РЎРёСЃС‚РµРјРЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ
+const WRONG_NAME 			:= "Р—Р°РїСЂРµС‰РµРЅС‹ РЅРёРєРё, РёРјРµСЋС‰РёРµ РІ СЃРІРѕРµРј СЃРѕСЃС‚Р°РІРµ СЃР»РѕРІР° '";
+const STAFF_PREFIX 			:= "' РёР»Рё РЅРёРєРѕРІ РїСЂРёРЅР°РґР»РµР¶Р°С‰РёС… РєРѕРјР°РЅРґРµ СЃРµСЂРІРµСЂР°.";
+const MAX_WORDS 			:= "Р—Р°РїСЂРµС‰РµРЅС‹ РЅРёРєРё, СЃРѕСЃС‚РѕСЏС‰РёРµ Р±РѕР»СЊС€Рµ С‡РµРј РёР· С‚СЂРµС… СЃР»РѕРІ.";
+const NAME_LENGHT 			:= "РќРёРє РґРѕР»Р¶РµРЅ СЃРѕСЃС‚РѕСЏС‚СЊ РёР· 3-20 СЃРёРјРІРѕР»РѕРІ.";
+const INVALID_CHARACTERS 	:= "РќРµРґРѕРїСѓСЃС‚РёРјС‹Рµ СЃРёРјРІРѕР»С‹ РІ РёРјРµРЅРё.";
+const NAME_USED				:= "Р­С‚Рѕ РёРјСЏ СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґСЂСѓРіРёРј РёРіСЂРѕРєРѕРј. Р’С‹Р±РµСЂРёС‚Рµ РґСЂСѓРіРѕРµ РёРјСЏ.";
+const CAPSLOCK_OFF			:= "Р—Р°РїСЂРµС‰РµРЅС‹ РЅРёРєРё, СЃРѕСЃС‚РѕСЏС‰РёРµ РЅР° 50% Рё Р±РѕР»РµРµ РїСЂРѕС†РµРЅС‚РѕРІ РёР· Р±СѓРєРІ РІРµСЂС…РЅРµРіРѕ СЂРµРіРёСЃС‚СЂР°.";
+const CORRECT_NAME			:= "РРјСЏ СЃРѕС‚РІРµСЃС‚РІСѓРµС‚ РІСЃРµРј РєСЂРёС‚РµСЂРёСЏРј";
+const YOU_NEW_NAME			:= "Р’Р°С€Рµ РЅРѕРІРѕРµ РёРјСЏ ";
+const SEXCHANGE				:= "Р•СЃР»Рё Р’С‹ СЂРµС€РёР»Рё СЃРјРµРЅРёС‚СЊ РїРѕР», СѓС‡С‚РёС‚Рµ - СЌС‚Рѕ Р±РѕР»РµР·РЅРµРЅР°СЏ РїСЂРѕС†РµРґСѓСЂР°.";
+const CANCEL 				:= "РћС‚РјРµРЅРµРЅРѕ!";
 
-const COLOR 	:= 34; 	// цвет сообжений: красный
+const COLOR 	:= 34; 	// С†РІРµС‚ СЃРѕРѕР±Р¶РµРЅРёР№: РєСЂР°СЃРЅС‹Р№
 
-// Позиция гампа относительно X, Y
+// РџРѕР·РёС†РёСЏ РіР°РјРїР° РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ X, Y
 var posX := 200;
 var posY := 40;		
 var deedser;
@@ -42,7 +42,7 @@ program rename_deed(who,deed)
 	deedser := deed.serial;
 
 	if(!deed.movable) 
-		SendSysMessage(who, "Эта вещь неподвижна"); 
+		SendSysMessage(who, "Р­С‚Р° РІРµС‰СЊ РЅРµРїРѕРґРІРёР¶РЅР°"); 
 		return;
 	endif
 
@@ -67,22 +67,22 @@ program rename_deed(who,deed)
 
 	var gfdata := {""};
 
-	// PAGE 1 - Условия
+	// PAGE 1 - РЈСЃР»РѕРІРёСЏ
 	gflayout.append("page 1");
 	gflayout.append("htmlgump "+ (posX+22) +" "+ (posY+34) +" 256 284 "+ len(gfdata) +" 1 1");
 	gflayout.append("button "+ (posX+127) +" "+ (posY+327) +" 2074 2076 0 2 0");
 
     gfdata.append
     (
-       	"I. Имя может состоять из 3-20 символов.<br>
-		II. Запрещены бессмысленные ники (вроде wergwrgf).<br>
-		III. Запрещены ники, содержащие цифры, символы. Исключение символ - и '<br>
-		IV. Запрещено использовать в нике нецензурщину, расизм, названия наркотических средств.<br>
-		V. Запрещены ники, имеющие в своем составе слова Counselor, Seer, GM или ников принадлежащих команде сервера.<br>
-		VI. Запрещена регистрация имён, схожих с уже существующими до степени, которые могут ввести в заблуждениедругих пользователей в игре."
+       	"I. РРјСЏ РјРѕР¶РµС‚ СЃРѕСЃС‚РѕСЏС‚СЊ РёР· 3-20 СЃРёРјРІРѕР»РѕРІ.<br>
+		II. Р—Р°РїСЂРµС‰РµРЅС‹ Р±РµСЃСЃРјС‹СЃР»РµРЅРЅС‹Рµ РЅРёРєРё (РІСЂРѕРґРµ wergwrgf).<br>
+		III. Р—Р°РїСЂРµС‰РµРЅС‹ РЅРёРєРё, СЃРѕРґРµСЂР¶Р°С‰РёРµ С†РёС„СЂС‹, СЃРёРјРІРѕР»С‹. РСЃРєР»СЋС‡РµРЅРёРµ СЃРёРјРІРѕР» - Рё '<br>
+		IV. Р—Р°РїСЂРµС‰РµРЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РІ РЅРёРєРµ РЅРµС†РµРЅР·СѓСЂС‰РёРЅСѓ, СЂР°СЃРёР·Рј, РЅР°Р·РІР°РЅРёСЏ РЅР°СЂРєРѕС‚РёС‡РµСЃРєРёС… СЃСЂРµРґСЃС‚РІ.<br>
+		V. Р—Р°РїСЂРµС‰РµРЅС‹ РЅРёРєРё, РёРјРµСЋС‰РёРµ РІ СЃРІРѕРµРј СЃРѕСЃС‚Р°РІРµ СЃР»РѕРІР° Counselor, Seer, GM РёР»Рё РЅРёРєРѕРІ РїСЂРёРЅР°РґР»РµР¶Р°С‰РёС… РєРѕРјР°РЅРґРµ СЃРµСЂРІРµСЂР°.<br>
+		VI. Р—Р°РїСЂРµС‰РµРЅР° СЂРµРіРёСЃС‚СЂР°С†РёСЏ РёРјС‘РЅ, СЃС…РѕР¶РёС… СЃ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРјРё РґРѕ СЃС‚РµРїРµРЅРё, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РІРІРµСЃС‚Рё РІ Р·Р°Р±Р»СѓР¶РґРµРЅРёРµРґСЂСѓРіРёС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ РІ РёРіСЂРµ."
 	);
 
-	// PAGE 2 - Изменение имени
+	// PAGE 2 - РР·РјРµРЅРµРЅРёРµ РёРјРµРЅРё
 	gflayout.append("page 2");
 
 	var sex;
@@ -93,16 +93,16 @@ program rename_deed(who,deed)
 
 	gflayout.append("gumppic "+ (posX+60) +" "+ (posY+55) +" "+ sex); 						// human gump
 	gflayout.append("text "+ (posX+65) +" "+ (posY+40) +" 49 " + len(gfdata));
-	gfdata.append("Введите желаемое имя");
+	gfdata.append("Р’РІРµРґРёС‚Рµ Р¶РµР»Р°РµРјРѕРµ РёРјСЏ");
     gflayout.append("resizepic "+ (posX+50) +" "+ (posY+64) +" 9500 200 25"); 				// input bg
     gflayout.append("textentry "+ (posX+55) +" "+ (posY+68) +" 187 25 71 0 "+ len(gfdata));	// input text
     gfdata.append(who.name); 																// input placeholder
     gflayout.append("checkbox  "+ (posX+85) +" "+ (posY+285) +" 212 211 0 100"); 			// radio button
     gflayout.append("text "+ (posX+110) +" "+ (posY+285) +" 49 "+ len(gfdata));
-    gfdata.append("Сменить пол"); 
+    gfdata.append("РЎРјРµРЅРёС‚СЊ РїРѕР»"); 
     gflayout.append("button "+ (posX+127) +" "+ (posY+327) +" 2074 2076 1 0 10");			// OK
 
-    // ВЫВОД
+    // Р’Р«Р’РћР”
 	var choice := SendDialogGump( who, gflayout, gfdata );
 	var his_choice := 0;
 
@@ -111,13 +111,13 @@ program rename_deed(who,deed)
 	    //SendSysMessage(who, "key: " + key);
 	endforeach
 
-	var text := choice[0][4, len(choice[0])]; // имя из текстового поля
+	var text := choice[0][4, len(choice[0])]; // РёРјСЏ РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ
 	var res;
 
 	case (his_choice)
 
-		10:	 res := changename(who, text, 0); // смена имени
-    	110: res := changename(who, text, 1); // смена имени и пола
+		10:	 res := changename(who, text, 0); // СЃРјРµРЅР° РёРјРµРЅРё
+    	110: res := changename(who, text, 1); // СЃРјРµРЅР° РёРјРµРЅРё Рё РїРѕР»Р°
 
     	default: 
     		SendSysMessage(who, CANCEL, 3, 0);
@@ -132,7 +132,7 @@ program rename_deed(who,deed)
 
 endprogram
 
-// СМЕНА ИМЕНИ
+// РЎРњР•РќРђ РРњР•РќР
 function changename(who, text, sex)
 
 	var reserved := 
@@ -148,9 +148,9 @@ function changename(who, text, sex)
 		return;
 	endif
 
-	var temp := SplitWords(text); 	// Возвращает маcсив имени
-	var lt := len(temp);  			// Размер массива 1 - 3
-	var maxlen := MAXCHAR;			// MAX кол-во символов в имени (Сейчас: 20)
+	var temp := SplitWords(text); 	// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°cСЃРёРІ РёРјРµРЅРё
+	var lt := len(temp);  			// Р Р°Р·РјРµСЂ РјР°СЃСЃРёРІР° 1 - 3
+	var maxlen := MAXCHAR;			// MAX РєРѕР»-РІРѕ СЃРёРјРІРѕР»РѕРІ РІ РёРјРµРЅРё (РЎРµР№С‡Р°СЃ: 20)
 
 	if(who.dead)
 		SendSysMessage(who, CANCEL, 3, 0);
@@ -158,14 +158,14 @@ function changename(who, text, sex)
 		return;
 	endif
 
-	// Если имя состоит больше чем из трех слов
+	// Р•СЃР»Рё РёРјСЏ СЃРѕСЃС‚РѕРёС‚ Р±РѕР»СЊС€Рµ С‡РµРј РёР· С‚СЂРµС… СЃР»РѕРІ
 	if(lt > 3)
 		SendSysMessage(who, MAX_WORDS, 3, COLOR);
 		SendSysMessage(who, CANCEL, 3, 0);
 		return;
 	endif
 
-	// Если 50% и более процентов из букв верхнего регистра.
+	// Р•СЃР»Рё 50% Рё Р±РѕР»РµРµ РїСЂРѕС†РµРЅС‚РѕРІ РёР· Р±СѓРєРІ РІРµСЂС…РЅРµРіРѕ СЂРµРіРёСЃС‚СЂР°.
 	if( !Character_Uppercase(text) )
 		SendSysMessage(who, CAPSLOCK_OFF, 3, COLOR);
 		SendSysMessage(who, CANCEL, 3, 0);
@@ -175,7 +175,7 @@ function changename(who, text, sex)
 	// START FOR
 	for i:=1 to lt
 
-		// Кол-во символов в имени. Сейчас от 3 до 20.
+		// РљРѕР»-РІРѕ СЃРёРјРІРѕР»РѕРІ РІ РёРјРµРЅРё. РЎРµР№С‡Р°СЃ РѕС‚ 3 РґРѕ 20.
 		if( len(temp[i]) > maxlen OR  len(temp[i]) < MINCHAR )
 			SendSysMessage(who, NAME_LENGHT, 3, COLOR);
 			SendSysMessage(who, CANCEL, 3, 0);
@@ -184,7 +184,7 @@ function changename(who, text, sex)
 		
 		if(i < lt) maxlen := maxlen - len(temp[i]); endif
 
-		//Если недопустимые символы в имени. Разрешено: Aa-Zz'-
+		//Р•СЃР»Рё РЅРµРґРѕРїСѓСЃС‚РёРјС‹Рµ СЃРёРјРІРѕР»С‹ РІ РёРјРµРЅРё. Р Р°Р·СЂРµС€РµРЅРѕ: Aa-Zz'-
 		if( !Character_Validation(temp[i]) )
 			SendSysMessage(who, INVALID_CHARACTERS, 3, COLOR);
 			logtofile(LOGFILE_PATH2, LOGDATE + ": INVALID_CHARACTERS: "+who.name+"/"+who.acctname+" => "+temp[i]);
@@ -192,7 +192,7 @@ function changename(who, text, sex)
 			return;
 		endif
 
-		// Проверка на Counselor, Seer, GM и остальное
+		// РџСЂРѕРІРµСЂРєР° РЅР° Counselor, Seer, GM Рё РѕСЃС‚Р°Р»СЊРЅРѕРµ
 		if( lower(temp[i]) in reserved )
 			SendSysMessage(who, WRONG_NAME + temp[i] + STAFF_PREFIX, 3, COLOR);
 			logtofile(LOGFILE_PATH2, LOGDATE + ": WRONG_NAME: "+who.name+"/"+who.acctname+" => "+temp[i]);
@@ -203,7 +203,7 @@ function changename(who, text, sex)
 	endfor
 	// END FOR
 
-	// Для особо хитрожопых
+	// Р”Р»СЏ РѕСЃРѕР±Рѕ С…РёС‚СЂРѕР¶РѕРїС‹С…
 	for j:=1 to len(reserved)
 
 		if(find(lower(temp), reserved[j], 0))
@@ -221,15 +221,15 @@ function changename(who, text, sex)
 		3: temp := temp[1] + " " + temp[2] + " " + temp[3];
 	endcase
 
-	var nn := cstr(temp); // новое имя
+	var nn := cstr(temp); // РЅРѕРІРѕРµ РёРјСЏ
 
-	// Проверка на сопадающие имена в базе
+	// РџСЂРѕРІРµСЂРєР° РЅР° СЃРѕРїР°РґР°СЋС‰РёРµ РёРјРµРЅР° РІ Р±Р°Р·Рµ
 	if(nn && namecheck(nn) AND nn != who.name)
 
 		SendSysMessage(who, CORRECT_NAME, 3, 70);
 		SendSysMessage(who, SEXCHANGE, 3, 0);
 
-		if(yesno(who,"Вы уверены?"))
+		if(yesno(who,"Р’С‹ СѓРІРµСЂРµРЅС‹?"))
 			SendSysMessage(who, YOU_NEW_NAME + nn, 3, 70);
 			PlayStationaryEffect(who.x, who.y, who.z, 0x377a, 0x1, 0x30, 0 );
 
@@ -250,7 +250,7 @@ function changename(who, text, sex)
 
 endfunction
 
-// Проверка на существующие имена
+// РџСЂРѕРІРµСЂРєР° РЅР° СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРµ РёРјРµРЅР°
 function namecheck(nn)
 
 		var nickdb := getGlobalProperty("nickname_db");
@@ -270,21 +270,21 @@ function namecheck(nn)
 
 endfunction
 
-// Проверка на символы
+// РџСЂРѕРІРµСЂРєР° РЅР° СЃРёРјРІРѕР»С‹
 function Character_Validation(nn)
 
 	var q, validstr:= {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "'", "-"}; 
 
 	nn := lower(nn);
-	var used := 0; 	// кол-во повторяюющихся - или ';
+	var used := 0; 	// РєРѕР»-РІРѕ РїРѕРІС‚РѕСЂСЏСЋСЋС‰РёС…СЃСЏ - РёР»Рё ';
 	var chk := 1;
-	// Если перед слово символ или в конце слова символ
+	// Р•СЃР»Рё РїРµСЂРµРґ СЃР»РѕРІРѕ СЃРёРјРІРѕР» РёР»Рё РІ РєРѕРЅС†Рµ СЃР»РѕРІР° СЃРёРјРІРѕР»
 	if(nn[1] == "-" OR nn[len(nn)] == "-" 
 	OR nn[1] == "'" OR nn[len(nn)] == "'") chk := 0;
 	else
 		for(q:=1; q<=len(nn);q:=q+1)
 
-			if(nn[q] == "-" OR nn[q] == "'") used := used + 1; endif // Если - или ' более одного
+			if(nn[q] == "-" OR nn[q] == "'") used := used + 1; endif // Р•СЃР»Рё - РёР»Рё ' Р±РѕР»РµРµ РѕРґРЅРѕРіРѕ
 
 			if(!(nn[q] in validstr) OR used > 1)
 				chk := 0; 
@@ -296,12 +296,12 @@ function Character_Validation(nn)
 
 endfunction
 
-// Проверка на CAPSLOCK
+// РџСЂРѕРІРµСЂРєР° РЅР° CAPSLOCK
 function Character_Uppercase(nn)
 
 	var q, validstr:= {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}; 
 
-	var used := 0; 	// кол-во ТаКиХ вОт бУкВ
+	var used := 0; 	// РєРѕР»-РІРѕ РўР°РљРёРҐ РІРћС‚ Р±РЈРєР’
 
 	var chk := 1; //default
 
@@ -319,7 +319,7 @@ function Character_Uppercase(nn)
 
 endfunction
 
-// СМЕНА ПОЛА
+// РЎРњР•РќРђ РџРћР›Рђ
 function changesex(who)
 
 	var sex;
@@ -330,7 +330,7 @@ function changesex(who)
 	PlayStationaryEffect( who.x, who.y, who.z, 0x122a, 0x1, 0x80, 0); //blood
 	sleepms(400);
 
-	// Убиваем
+	// РЈР±РёРІР°РµРј
 	if(!who.dead)
 		RevokePrivilege(who, "invul" );
 		Damage(who, GetHp(who)+100);
@@ -340,10 +340,10 @@ function changesex(who)
 
 	if(who.dead)
 
-		// Воскрещаем
+		// Р’РѕСЃРєСЂРµС‰Р°РµРј
 		ResurrectEx(who,RESURRECT_FORCELOCATION);
 
-		// Подбирает обратно вещи
+		// РџРѕРґР±РёСЂР°РµС‚ РѕР±СЂР°С‚РЅРѕ РІРµС‰Рё
 		foreach item in ListItemsNearLocation(who.x, who.y, who.z, 0)
 			if(GetObjProperty(item,"serial") == who.serial)
 				foreach thing in EnumerateItemsInContainer(item)
@@ -357,6 +357,6 @@ function changesex(who)
 
 	endif
 	logtofile(LOGFILE_PATH2, LOGDATE + ": CHANGE_SEX: "+who.name+"/"+who.acctname);
-	SendSysMessage(who, "Смешна пола произошла успешно");
+	SendSysMessage(who, "РЎРјРµС€РЅР° РїРѕР»Р° РїСЂРѕРёР·РѕС€Р»Р° СѓСЃРїРµС€РЅРѕ");
 
 endfunction
